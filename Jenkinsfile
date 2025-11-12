@@ -2,47 +2,71 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCESS_KEY_ID = credentials("aws-access-key")
-        AWS_SECRET_ACCESS_KEY = credentials("aws-secret-key")
-        AWS_DEFAULT_REGION = 'eu-north-1'  // change region if needed
+        AWS_REGION = 'eu-north-1'
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/ramsrikanthpabbineedi/resource.git'
+                echo "Checking out Terraform code..."
+                git branch: 'main', url: 'https://github.com/your-username/your-terraform-repo.git'
             }
         }
 
-        stage('Initialize Terraform') {
+        stage('Terraform Format Check') {
             steps {
-                sh 'terraform init'
+                echo "Checking Terraform formatting..."
+                sh 'terraform fmt -check -recursive'
             }
         }
 
-        stage('Validate Terraform') {
+        stage('Terraform Init') {
             steps {
-                sh 'terraform validate'
+                withAWS(credentials: 'aws-credentials-id', region: "${AWS_REGION}") {
+                    sh 'terraform init -input=false'
+                }
             }
         }
 
-        stage('Plan Terraform') {
+        stage('Terraform Validate') {
             steps {
-                sh 'terraform plan -out=tfplan'
+                withAWS(credentials: 'aws-credentials-id', region: "${AWS_REGION}") {
+                    sh 'terraform validate'
+                }
             }
         }
 
-        stage('Apply Terraform') {
+        stage('Terraform Plan') {
             steps {
-                input message: 'Do you want to apply the Terraform plan?', ok: 'Apply'
-                sh 'terraform apply -auto-approve tfplan'
+                withAWS(credentials: 'aws-credentials-id', region: "${AWS_REGION}") {
+                    sh 'terraform plan -out=tfplan -input=false'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                script {
+                    def userInput = input message: 'Do you want to apply the Terraform plan?', ok: 'Apply'
+                    if (userInput) {
+                        withAWS(credentials: 'aws-credentials-id', region: "${AWS_REGION}") {
+                            sh 'terraform apply -input=false tfplan'
+                        }
+                    }
+                }
             }
         }
     }
 
     post {
+        success {
+            echo "✅ Terraform resources deployed successfully!"
+        }
+        failure {
+            echo "❌ Terraform pipeline failed!"
+        }
         always {
-            echo 'Pipeline finished!'
+            cleanWs()
         }
     }
 }
