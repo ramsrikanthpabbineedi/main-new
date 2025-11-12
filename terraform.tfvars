@@ -1,0 +1,12 @@
+aws_region    = "eu-north-1"
+vpc_cidr      = "10.0.0.0/16"
+vpc_name      = "ram-vpc"
+subnet_cidr   = "10.0.0.0/25"
+subnet_name   = "ram-subnet"
+group_name    = "ram-group"
+ami           = "ami-0fa91bc90632c73c9"
+instance_type = "t3.micro"
+sns_endpoint  = "ramsrikanthpabbineedi@gmail.com"
+metric_name   = "CPUUtilization"
+threshold_no  = 50
+igw_name      = "igw"
