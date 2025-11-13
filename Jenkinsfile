@@ -4,14 +4,6 @@ pipeline {
     environment {
         AWS_REGION = 'eu-north-1'
     }
-    withCredentials([file(credentialsId: 'aws-key', variable: 'AWS_KEY_FILE')]) {
-    sh '''
-      cp "$AWS_KEY_FILE" ./aws-key.pem
-      terraform validate
-    '''
-}
-
-    
 
     stages {
         stage('Checkout') {
@@ -38,8 +30,12 @@ pipeline {
 
         stage('Terraform Validate') {
             steps {
-                withAWS(credentials: 'aws-credentials-id', region: "${AWS_REGION}") {
-                    sh 'terraform validate'
+                // ✅ Use Jenkins credentials securely here
+                withCredentials([file(credentialsId: 'aws-key', variable: 'AWS_KEY_FILE')]) {
+                    sh '''
+                        cp "$AWS_KEY_FILE" ./aws-key.pem
+                        terraform validate
+                    '''
                 }
             }
         }
