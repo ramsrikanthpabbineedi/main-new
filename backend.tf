@@ -3,6 +3,6 @@ terraform {
     bucket = "ramram-bucket"
     key    = "infra/terraform.tfstate"
     region = "eu-north-1"
-    
+
   }
 }
