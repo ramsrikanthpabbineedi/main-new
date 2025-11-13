@@ -80,7 +80,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 }
 resource "aws_key_pair" "ram" {
   key_name   = "ram"
-  public_key = file("${path.module}/aws-key.pem")
+  public_key = file("${path.module}/aws-key.pub")
 
   tags = {
     Name = "ram"
