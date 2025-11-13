@@ -33,7 +33,7 @@ pipeline {
                 // ✅ Use Jenkins credentials securely here
                 withCredentials([file(credentialsId: 'aws-key', variable: 'AWS_KEY_FILE')]) {
                     sh '''
-                        cp "$AWS_KEY_FILE" ./aws-key.pem
+                        cp "$AWS_KEY_FILE" ./ram.pub
                         terraform validate
                     '''
                 }
