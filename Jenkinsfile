@@ -8,21 +8,22 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo "Checking out Terraform code..."
+                echo "📦 Checking out Terraform code..."
                 git branch: 'main', url: 'https://github.com/ramsrikanthpabbineedi/main-new.git'
             }
         }
 
         stage('Terraform Format Check') {
             steps {
-                echo "Checking Terraform formatting..."
+                echo "🧩 Checking Terraform formatting..."
                 sh 'terraform fmt -check -recursive'
             }
         }
 
         stage('Terraform Init') {
             steps {
-                withAWS(credentials: 'aws-credentials-id', region: "${AWS_REGION}") {
+                echo "🚀 Initializing Terraform..."
+                withAWS(credentials: 'aws_id', region: "${AWS_REGION}") {
                     sh 'terraform init -input=false'
                 }
             }
@@ -30,19 +31,17 @@ pipeline {
 
         stage('Terraform Validate') {
             steps {
-                // ✅ Use Jenkins credentials securely here
-                withCredentials([file(credentialsId: 'aws-key', variable: 'AWS_KEY_FILE')]) {
-                    sh '''
-                        cp "$AWS_KEY_FILE" ./ram.pub
-                        terraform validate
-                    '''
+                echo "🧠 Validating Terraform configuration..."
+                withAWS(credentials: 'aws_id', region: "${AWS_REGION}") {
+                    sh 'terraform validate'
                 }
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                withAWS(credentials: 'aws-credentials-id', region: "${AWS_REGION}") {
+                echo "📝 Creating Terraform plan..."
+                withAWS(credentials: 'aws_id', region: "${AWS_REGION}") {
                     sh 'terraform plan -out=tfplan -input=false'
                 }
             }
@@ -50,13 +49,9 @@ pipeline {
 
         stage('Terraform Apply') {
             steps {
-                script {
-                    def userInput = input message: 'Do you want to apply the Terraform plan?', ok: 'Apply'
-                    if (userInput) {
-                        withAWS(credentials: 'aws-credentials-id', region: "${AWS_REGION}") {
-                            sh 'terraform apply -input=false tfplan'
-                        }
-                    }
+                echo "⚙️ Applying Terraform changes automatically..."
+                withAWS(credentials: 'aws_id', region: "${AWS_REGION}") {
+                    sh 'terraform apply -auto-approve tfplan'
                 }
             }
         }
