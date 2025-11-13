@@ -4,6 +4,14 @@ pipeline {
     environment {
         AWS_REGION = 'eu-north-1'
     }
+    withCredentials([file(credentialsId: 'aws-key', variable: 'AWS_KEY_FILE')]) {
+    sh '''
+      cp "$AWS_KEY_FILE" ./aws-key.pem
+      terraform validate
+    '''
+}
+
+    
 
     stages {
         stage('Checkout') {
