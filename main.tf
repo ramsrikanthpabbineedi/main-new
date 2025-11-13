@@ -75,11 +75,11 @@ resource "aws_iam_role_policy_attachment" "example" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2-instance-profile-${random_id.suffix.hex}"
+  name = "ram-ec2"
   role = aws_iam_role.r-1.name
 }
 resource "aws_key_pair" "ram" {
-  key_name   = "ram-${random_id.suffix.hex}"
+  key_name   = "kavaya"
   public_key = file("${path.module}/ram.pub")
   lifecycle {
     ignore_changes = [public_key]
